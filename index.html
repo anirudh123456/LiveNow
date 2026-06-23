@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>LIVE NOW</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root{
+    --void:#FFFFFF;
+    --bone:#0B1D3A;
+    --dim:#7186A8;
+    --line:rgba(11,29,58,.10);
+    --panel:#F2F6FC;
+
+    --c-dance:#3DA8FF;
+    --c-meditate:#1E6FE0;
+    --c-exercise:#5AC8FA;
+    --c-study:#0B3FA8;
+    --c-nosmoke:#2E8FE6;
+    --c-friends:#7FC4FF;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+  html,body{
+    background:var(--void);
+    color:var(--bone);
+    font-family:'Space Grotesk',sans-serif;
+    min-height:100%;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+
+  body{
+    min-height:100vh;
+    min-height:100dvh;
+    padding:env(safe-area-inset-top) 20px calc(env(safe-area-inset-bottom) + 92px) 20px;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .star{position:absolute;border-radius:50%;opacity:.5;animation:drift 14s ease-in-out infinite;}
+  @keyframes drift{
+    0%{transform:translateY(0) translateX(0);opacity:.25;}
+    50%{transform:translateY(-18px) translateX(8px);opacity:.55;}
+    100%{transform:translateY(0) translateX(0);opacity:.25;}
+  }
+
+  .wrap{position:relative;z-index:2;max-width:480px;margin:0 auto;}
+
+  header{
+    padding-top:26px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--dim);
+    text-transform:uppercase;
+  }
+  #dateline{color:var(--bone);}
+
+  .hero{
+    margin-top:18px;
+    margin-bottom:8px;
+  }
+  .hero h1{
+    font-weight:700;
+    line-height:.94;
+    letter-spacing:-.02em;
+    font-size:min(15vw,58px);
+    text-transform:uppercase;
+  }
+  .hero h1 .accent{
+    background:linear-gradient(92deg, var(--c-dance), var(--c-exercise) 35%, var(--c-study) 55%, var(--c-meditate) 75%, var(--c-friends));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero p{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--dim);
+    margin-top:10px;
+    max-width:320px;
+    line-height:1.5;
+  }
+
+  .progress-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:22px 0 6px;
+  }
+  .progress-track{
+    flex:1;
+    height:6px;
+    border-radius:100px;
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    border-radius:100px;
+    background:linear-gradient(90deg, var(--c-dance), var(--c-exercise), var(--c-study), var(--c-meditate), var(--c-friends));
+    width:0%;
+    transition:width .4s cubic-bezier(.2,.9,.3,1.1);
+  }
+  .progress-count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--dim);
+    white-space:nowrap;
+  }
+
+  ul.tasks{
+    list-style:none;
+    margin-top:18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .task{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px 16px 16px 20px;
+    transition:background .25s ease, border-color .25s ease, transform .12s ease, box-shadow .25s ease;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .task::before{
+    content:'';
+    position:absolute;
+    left:0;top:10px;bottom:10px;
+    width:4px;
+    border-radius:4px;
+    background:var(--dim);
+    opacity:.35;
+    transition:all .25s ease;
+  }
+  .task:active{transform:scale(.985);}
+  .task.done{
+    background:color-mix(in srgb, var(--task-color) 8%, white);
+    border-color:color-mix(in srgb, var(--task-color) 35%, transparent);
+    box-shadow:0 4px 16px -6px color-mix(in srgb, var(--task-color) 50%, transparent);
+  }
+  .task.done::before{
+    background:var(--task-color);
+    opacity:1;
+  }
+
+  .check{
+    flex:0 0 26px;
+    width:26px;height:26px;
+    border-radius:8px;
+    border:2px solid var(--dim);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all .2s ease;
+  }
+  .task.done .check{
+    background:var(--task-color);
+    border-color:var(--task-color);
+  }
+  .check svg{
+    width:14px;height:14px;
+    opacity:0;
+    transform:scale(.6);
+    transition:all .18s ease;
+  }
+  .task.done .check svg{opacity:1;transform:scale(1);}
+
+  .task-text{flex:1;}
+  .task-label{
+    font-weight:700;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:.01em;
+    transition:color .25s ease;
+  }
+  .task.done .task-label{color:var(--task-color);text-decoration:line-through;text-decoration-color:color-mix(in srgb, var(--task-color) 50%, transparent);}
+  .task-sub{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--dim);
+    margin-top:2px;
+  }
+
+  .task-icon{
+    flex:0 0 20px;
+    text-align:center;
+    font-size:17px;
+    opacity:.55;
+    transition:all .25s ease;
+  }
+  .task.done .task-icon{
+    opacity:1;
+    color:var(--task-color);
+  }
+
+  .reset-row{
+    margin-top:26px;
+    display:flex;
+    justify-content:center;
+  }
+  #resetBtn{
+    appearance:none;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:10px 18px;
+    border-radius:100px;
+    cursor:pointer;
+  }
+  #resetBtn:active{opacity:.7;}
+
+  #footerLine{
+    margin-top:30px;
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--dim);
+    letter-spacing:.05em;
+    line-height:1.6;
+    padding-bottom:10px;
+  }
+  #footerLine .glow{color:var(--c-study);}
+
+  #toast{
+    position:fixed;
+    bottom:-100px;
+    left:24px;right:24px;
+    background:var(--bone);
+    color:#FFFFFF;
+    padding:16px 20px;
+    border-radius:16px;
+    font-weight:700;
+    text-align:center;
+    z-index:10;
+    transition:bottom .35s cubic-bezier(.2,.9,.3,1.2);
+    box-shadow:0 12px 32px -8px rgba(11,29,58,.35);
+    max-width:480px;
+    margin:0 auto;
+  }
+  #toast.show{bottom:30px;}
+
+  /* ---------- pages ---------- */
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ---------- bottom nav ---------- */
+  nav.tabbar{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    z-index:20;
+    display:flex;
+    justify-content:center;
+    padding:0 20px calc(env(safe-area-inset-bottom) + 14px) 20px;
+    pointer-events:none;
+  }
+  .tabbar-inner{
+    pointer-events:auto;
+    display:flex;
+    gap:4px;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:6px;
+    max-width:480px;
+    width:100%;
+    box-shadow:0 8px 30px -10px rgba(11,29,58,.25);
+  }
+  .tab-btn{
+    flex:1;
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:var(--dim);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    padding:12px 0;
+    border-radius:100px;
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .tab-btn.active{
+    background:var(--bone);
+    color:#FFFFFF;
+  }
+
+  /* ---------- insights page ---------- */
+  .insights-header{padding-top:26px;}
+  .insights-header h1{
+    font-weight:700;
+    line-height:.96;
+    letter-spacing:-.02em;
+    font-size:min(11vw,40px);
+    text-transform:uppercase;
+  }
+  .insights-header p{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--dim);
+    margin-top:8px;
+    max-width:320px;
+    line-height:1.5;
+  }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:20px;
+  }
+  .stat-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px;
+  }
+  .stat-card .stat-value{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:28px;
+    line-height:1;
+  }
+  .stat-card .stat-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin-top:6px;
+  }
+  .stat-card.wide{grid-column:1/-1;}
+  .stat-card.accent .stat-value{
+    background:linear-gradient(92deg, var(--c-dance), var(--c-exercise) 35%, var(--c-study) 55%, var(--c-meditate) 75%, var(--c-friends));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+
+  .week-row{
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+  }
+  .week-day{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+  .week-day .dot{
+    width:100%;
+    aspect-ratio:1;
+    border-radius:9px;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .week-day .dot.full{
+    background:linear-gradient(135deg, var(--c-dance), var(--c-study));
+    border-color:transparent;
+    box-shadow:0 4px 12px -4px var(--c-meditate);
+  }
+  .week-day .dot.partial{
+    background:color-mix(in srgb, var(--c-friends) 35%, white);
+    border-color:color-mix(in srgb, var(--c-friends) 50%, transparent);
+  }
+  .week-day span{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    color:var(--dim);
+    text-transform:uppercase;
+  }
+
+  .section-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin:28px 0 12px;
+  }
+
+  .insight-card{
+    position:relative;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px 18px 18px 20px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  .insight-card::before{
+    content:'';
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:4px;
+    background:var(--task-color);
+    opacity:.85;
+  }
+  .insight-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:4px;
+  }
+  .insight-icon{
+    font-size:16px;
+    color:var(--task-color);
+  }
+  .insight-title{
+    font-weight:700;
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:.01em;
+  }
+  .insight-count{
+    margin-left:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--task-color);
+  }
+  .insight-row{
+    margin-top:10px;
+  }
+  .insight-row .k{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--task-color);
+    opacity:.9;
+  }
+  .insight-row .v{
+    font-size:13px;
+    color:var(--bone);
+    line-height:1.5;
+    margin-top:3px;
+    font-family:'Space Grotesk',sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<!-- ===== TODAY PAGE ===== -->
+<div class="page active" id="page-today">
+  <div class="wrap">
+    <header>
+      <span class="eyebrow">LIVELIFE.OS</span>
+      <span class="eyebrow" id="dateline">--</span>
+    </header>
+
+    <div class="hero">
+      <h1><span class="accent">LIVE NOW.</span><br>LIFE IS NOW.</h1>
+      <p>do everything now, bro. not later, not Monday, not after this video. now.</p>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-count" id="progressCount">0/6</div>
+    </div>
+
+    <ul class="tasks" id="taskList"></ul>
+
+    <div class="reset-row">
+      <button id="resetBtn">reset today</button>
+    </div>
+
+    <div id="footerLine">resets at midnight · <span class="glow">streak</span>: <span id="streakCount">0</span> days</div>
+  </div>
+</div>
+
+<!-- ===== INSIGHTS PAGE ===== -->
+<div class="page" id="page-insights">
+  <div class="wrap">
+    <div class="insights-header">
+      <h1>YOUR PATTERNS.</h1>
+      <p>what you've actually done, and why each one matters.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card accent wide">
+        <div class="stat-value" id="statStreak">0 days</div>
+        <div class="stat-label">current streak · all six</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTracked">0</div>
+        <div class="stat-label">days tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statRate">0%</div>
+        <div class="stat-label">7-day completion rate</div>
+      </div>
+      <div class="stat-card wide">
+        <div class="stat-value" id="statBest" style="font-size:18px;">—</div>
+        <div class="stat-label">most consistent ritual</div>
+      </div>
+    </div>
+
+    <div class="section-label">last 7 days</div>
+    <div class="week-row" id="weekRow"></div>
+
+    <div class="section-label">what each one does</div>
+    <div id="insightList"></div>
+
+    <div style="height:10px;"></div>
+  </div>
+</div>
+
+<nav class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab-btn active" id="tabToday">Today</button>
+    <button class="tab-btn" id="tabInsights">Insights</button>
+  </div>
+</nav>
+
+<div id="toast"></div>
+
+<script>
+const TASKS = [
+  { id:'dance',    label:'Dance',          sub:'move your body, no reason needed',  icon:'✦', color:'var(--c-dance)',
+    does:"Rhythmic movement raises heart rate and triggers large-muscle activity, similar to other moderate cardio.",
+    achieves:"Releases dopamine and endorphins fast, which is why a few minutes of dancing can shift a flat mood quicker than sitting and thinking about it." },
+  { id:'meditate', label:'Meditate',       sub:'sit still, watch it pass',          icon:'◎', color:'var(--c-meditate)',
+    does:"Sitting with attention on the breath lowers activity in the brain's default mode network, the part responsible for mind-wandering and rumination.",
+    achieves:"Builds the gap between an urge or emotion and your reaction to it — the same gap that makes resisting a craving or staying calm under stress easier over time." },
+  { id:'exercise', label:'Exercise',       sub:'sweat counts as proof of life',     icon:'△', color:'var(--c-exercise)',
+    does:"Sustained physical effort increases heart rate, circulation, and triggers BDNF, a protein that supports brain cell growth.",
+    achieves:"Improves sleep quality, baseline energy, and stress resilience — and gives the body a legitimate outlet for restlessness that might otherwise turn into a craving." },
+  { id:'study',    label:'Study',          sub:'feed the part of you that grows',   icon:'▤', color:'var(--c-study)',
+    does:"Focused learning forms new synaptic connections and strengthens existing ones through repetition and recall.",
+    achieves:"Compounds over weeks and months into real skill and confidence — proof that effort today shows up later, which is the opposite of instant-gratification thinking." },
+  { id:'nosmoke',  label:"Didn't smoke",   sub:'one urge at a time, you won today', icon:'◆', color:'var(--c-nosmoke)',
+    does:"Each urge you sit through without smoking is a craving cycle left to peak and pass on its own — most nicotine cravings fade within minutes.",
+    achieves:"Every smoke-free day lets carbon monoxide levels drop and oxygen circulation improve; the urges get shorter and further apart the longer you go." },
+  { id:'friends',  label:'Make friends',   sub:'reach out, say the thing',          icon:'◯', color:'var(--c-friends)',
+    does:"A real conversation activates social bonding circuitry and triggers oxytocin release, distinct from passive scrolling or texting.",
+    achieves:"Strong social connection is one of the most consistent predictors of long-term wellbeing and recovery from addictive patterns — isolation is what most habits you're trying to quit feed on." },
+];
+
+const $ = id => document.getElementById(id);
+
+// drifting sky dots, tinted across the blue palette
+const STAR_COLORS = ['#3DA8FF','#1E6FE0','#5AC8FA','#0B3FA8','#2E8FE6','#7FC4FF'];
+const starsEl = $('stars');
+for(let i=0;i<50;i++){
+  const s = document.createElement('div');
+  s.className = 'star';
+  const sz = 3 + Math.random()*5;
+  s.style.width = sz+'px';
+  s.style.height = sz+'px';
+  s.style.left = Math.random()*100+'%';
+  s.style.top = Math.random()*100+'%';
+  s.style.animationDelay = (Math.random()*14)+'s';
+  s.style.animationDuration = (10+Math.random()*8)+'s';
+  s.style.background = STAR_COLORS[Math.floor(Math.random()*STAR_COLORS.length)];
+  starsEl.appendChild(s);
+}
+const taskList = $('taskList');
+const toast = $('toast');
+const dateline = $('dateline');
+
+function todayKey(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function loadState(){
+  const raw = localStorage.getItem('ll_checklist');
+  let store = raw ? JSON.parse(raw) : { date: todayKey(), done: {}, streak: 0, lastCompleteDate: null, history: {} };
+  if(!store.history) store.history = {};
+
+  if(store.date !== todayKey()){
+    // roll the just-finished day into history before resetting
+    if(Object.keys(store.done).length){
+      store.history[store.date] = store.done;
+    }
+    const allDoneYesterday = TASKS.every(t => store.done[t.id]);
+    store = {
+      date: todayKey(),
+      done: {},
+      streak: allDoneYesterday ? store.streak : 0,
+      lastCompleteDate: store.lastCompleteDate,
+      history: store.history
+    };
+    saveState(store);
+  }
+  return store;
+}
+
+function saveState(store){
+  localStorage.setItem('ll_checklist', JSON.stringify(store));
+}
+
+let state = loadState();
+
+// keep today's progress mirrored into history live, so stats update in real time
+function syncTodayToHistory(){
+  state.history[state.date] = state.done;
+}
+
+function render(){
+  taskList.innerHTML = '';
+  TASKS.forEach(t => {
+    const li = document.createElement('li');
+    li.className = 'task' + (state.done[t.id] ? ' done' : '');
+    li.dataset.id = t.id;
+    li.style.setProperty('--task-color', t.color);
+    li.innerHTML = `
+      <span class="task-icon">${t.icon}</span>
+      <div class="task-text">
+        <div class="task-label">${t.label}</div>
+        <div class="task-sub">${t.sub}</div>
+      </div>
+      <span class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </span>
+    `;
+    li.addEventListener('click', () => toggleTask(t.id));
+    taskList.appendChild(li);
+  });
+  updateProgress();
+  dateline.textContent = new Date().toLocaleDateString([], { weekday:'short', month:'short', day:'numeric' });
+}
+
+function updateProgress(){
+  const total = TASKS.length;
+  const done = TASKS.filter(t => state.done[t.id]).length;
+  $('progressFill').style.width = (done/total*100) + '%';
+  $('progressCount').textContent = `${done}/${total}`;
+  $('streakCount').textContent = state.streak;
+}
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=> toast.classList.remove('show'), 2200);
+}
+
+const DONE_LINES = [
+  "one more thing lived, not just planned.",
+  "now counted. that's the whole game.",
+  "that's a real moment, not a maybe.",
+  "logged. now is undefeated again."
+];
+
+function toggleTask(id){
+  state.done[id] = !state.done[id];
+  syncTodayToHistory();
+  saveState(state);
+  render();
+
+  if(state.done[id]){
+    showToast(DONE_LINES[Math.floor(Math.random()*DONE_LINES.length)]);
+  }
+
+  const allDone = TASKS.every(t => state.done[t.id]);
+  if(allDone && state.lastCompleteDate !== state.date){
+    state.streak += 1;
+    state.lastCompleteDate = state.date;
+    saveState(state);
+    setTimeout(()=> showToast(`all six. streak: ${state.streak} 🔥`), 300);
+    updateProgress();
+  }
+}
+
+$('resetBtn').addEventListener('click', () => {
+  state.done = {};
+  syncTodayToHistory();
+  saveState(state);
+  render();
+});
+
+render();
+
+/* ---------- INSIGHTS ---------- */
+
+function dateNDaysAgo(n){
+  const d = new Date();
+  d.setDate(d.getDate()-n);
+  return d.toISOString().slice(0,10);
+}
+
+function computeStats(){
+  const history = state.history || {};
+  const allDates = Object.keys(history);
+  const daysTracked = allDates.length;
+
+  // 7-day completion rate (avg fraction of 6 tasks done per day, last 7 days incl today)
+  let sumFraction = 0, daysCounted = 0;
+  const last7 = [];
+  for(let i=6;i>=0;i--){
+    const key = dateNDaysAgo(i);
+    const rec = history[key] || {};
+    const doneCount = TASKS.filter(t => rec[t.id]).length;
+    last7.push({ key, doneCount });
+    if(history[key]){
+      sumFraction += doneCount/TASKS.length;
+      daysCounted++;
+    }
+  }
+  const rate = daysCounted ? Math.round((sumFraction/daysCounted)*100) : 0;
+
+  // most consistent task: highest completion count across all tracked days
+  const taskCounts = {};
+  TASKS.forEach(t => taskCounts[t.id] = 0);
+  allDates.forEach(d => {
+    TASKS.forEach(t => { if(history[d][t.id]) taskCounts[t.id]++; });
+  });
+  let bestId = null, bestCount = -1;
+  TASKS.forEach(t => { if(taskCounts[t.id] > bestCount){ bestCount = taskCounts[t.id]; bestId = t.id; } });
+  const bestTask = TASKS.find(t => t.id===bestId);
+
+  return { daysTracked, rate, last7, bestTask, bestCount, taskCounts };
+}
+
+function renderInsights(){
+  const stats = computeStats();
+
+  $('statStreak').textContent = `${state.streak} day${state.streak===1?'':'s'}`;
+  $('statTracked').textContent = stats.daysTracked;
+  $('statRate').textContent = `${stats.rate}%`;
+  $('statBest').textContent = stats.bestCount > 0 ? stats.bestTask.label : 'not yet';
+
+  // week strip
+  const weekRow = $('weekRow');
+  weekRow.innerHTML = '';
+  const labels = ['S','M','T','W','T','F','S'];
+  stats.last7.forEach(day => {
+    const dow = new Date(day.key + 'T00:00:00').getDay();
+    const div = document.createElement('div');
+    div.className = 'week-day';
+    const cls = day.doneCount===TASKS.length ? 'full' : (day.doneCount>0 ? 'partial' : '');
+    div.innerHTML = `<div class="dot ${cls}"></div><span>${labels[dow]}</span>`;
+    weekRow.appendChild(div);
+  });
+
+  // per-task insight cards
+  const list = $('insightList');
+  list.innerHTML = '';
+  TASKS.forEach(t => {
+    const count = stats.taskCounts[t.id] || 0;
+    const card = document.createElement('div');
+    card.className = 'insight-card';
+    card.style.setProperty('--task-color', t.color);
+    card.innerHTML = `
+      <div class="insight-top">
+        <span class="insight-icon">${t.icon}</span>
+        <span class="insight-title">${t.label}</span>
+        <span class="insight-count">${count}× logged</span>
+      </div>
+      <div class="insight-row">
+        <div class="k">what it does</div>
+        <div class="v">${t.does}</div>
+      </div>
+      <div class="insight-row">
+        <div class="k">what it achieves</div>
+        <div class="v">${t.achieves}</div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+/* ---------- TAB SWITCHING ---------- */
+const pageToday = $('page-today');
+const pageInsights = $('page-insights');
+const tabToday = $('tabToday');
+const tabInsights = $('tabInsights');
+
+function showPage(name){
+  if(name==='today'){
+    pageToday.classList.add('active');
+    pageInsights.classList.remove('active');
+    tabToday.classList.add('active');
+    tabInsights.classList.remove('active');
+  } else {
+    pageInsights.classList.add('active');
+    pageToday.classList.remove('active');
+    tabInsights.classList.add('active');
+    tabToday.classList.remove('active');
+    renderInsights();
+  }
+}
+
+tabToday.addEventListener('click', () => showPage('today'));
+tabInsights.addEventListener('click', () => showPage('insights'));
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+
+</body>
+</html>
